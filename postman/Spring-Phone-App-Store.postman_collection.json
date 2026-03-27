@@ -1,0 +1,517 @@
+{
+  "info": {
+    "_postman_id": "0f8c6166-35a7-4f82-9365-7b9c4f670001",
+    "name": "Spring Phone App Store",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for testing the Spring Phone smartphone app store backend."
+  },
+  "item": [
+    {
+      "name": "App Browse",
+      "item": [
+        {
+          "name": "Get All Apps",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/apps",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "apps"
+              ]
+            },
+            "description": "Return all apps ordered by the backend logic."
+          },
+          "response": []
+        },
+        {
+          "name": "Search Apps By Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/apps?name=fit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "apps"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "fit"
+                }
+              ]
+            },
+            "description": "Search apps by partial name."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Apps By Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/apps?category=Productivity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "apps"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Productivity"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Apps By Name And Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/apps?name=note&category=Productivity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "apps"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "note"
+                },
+                {
+                  "key": "category",
+                  "value": "Productivity"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Available Apps",
+      "item": [
+        {
+          "name": "Get Available Apps For User 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/apps/available",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "apps",
+                "available"
+              ]
+            },
+            "description": "Apps user 1 has not purchased yet."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Apps For User 1 By Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/apps/available?category=Games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "apps",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Games"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Apps For User 1 By Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/apps/available?name=map",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "apps",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "map"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Apps For Missing User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999/apps/available",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "999",
+                "apps",
+                "available"
+              ]
+            },
+            "description": "Should return 404."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Purchases",
+      "item": [
+        {
+          "name": "Get Purchases For User 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "purchases"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Purchase App 11 For User 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appId\": 11\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "purchases"
+              ]
+            },
+            "description": "Successful purchase if user 1 has not bought app 11 yet."
+          },
+          "response": []
+        },
+        {
+          "name": "Purchase App 20 For User 2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appId\": 20\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/2/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "2",
+                "purchases"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Purchase Same App Again For User 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appId\": 11\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "purchases"
+              ]
+            },
+            "description": "Run after the successful purchase above to verify 409 conflict."
+          },
+          "response": []
+        },
+        {
+          "name": "Purchase Missing App For User 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appId\": 999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "purchases"
+              ]
+            },
+            "description": "Should return 404 because the app does not exist."
+          },
+          "response": []
+        },
+        {
+          "name": "Purchase App For Missing User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appId\": 11\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "999",
+                "purchases"
+              ]
+            },
+            "description": "Should return 404 because the user does not exist."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Purchases For Missing User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "999",
+                "purchases"
+              ]
+            },
+            "description": "Should return 404."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Suggested Flow",
+      "item": [
+        {
+          "name": "Step 1 - Check Available Apps For User 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/apps/available?name=travel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "apps",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "travel"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2 - Purchase TravelMap For User 1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appId\": 11\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "purchases"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 3 - Check Purchases For User 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "purchases"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 4 - Check TravelMap No Longer Available",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/apps/available?name=travel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1",
+                "apps",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "travel"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
