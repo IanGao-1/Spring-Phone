@@ -1,5 +1,6 @@
 package com.example.springphone.controller;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,6 +26,22 @@ class AppControllerTest {
     private AppService appService;
 
     @Test
+    void browseAppsShouldReturnAllAppsWhenNoQueryParamsAreProvided() throws Exception {
+        when(appService.browseApps(null, null)).thenReturn(List.of(
+            new AppResponse(1L, "ChatWave", "Social", new BigDecimal("0.99"), "Chat app."),
+            new AppResponse(2L, "FitTrack Pro", "Health", new BigDecimal("3.99"), "Fitness app.")
+        ));
+
+        mockMvc.perform(get("/api/apps"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].name").value("ChatWave"))
+            .andExpect(jsonPath("$[1].name").value("FitTrack Pro"));
+
+        verify(appService).browseApps(null, null);
+    }
+
+    @Test
     void browseAppsShouldReturnFilteredApps() throws Exception {
         when(appService.browseApps("fit", "Health")).thenReturn(List.of(
             new AppResponse(2L, "FitTrack Pro", "Health", new BigDecimal("3.99"), "Tracks daily fitness goals.")
@@ -38,5 +55,16 @@ class AppControllerTest {
             .andExpect(jsonPath("$[0].name").value("FitTrack Pro"))
             .andExpect(jsonPath("$[0].category").value("Health"))
             .andExpect(jsonPath("$[0].price").value(3.99));
+
+        verify(appService).browseApps("fit", "Health");
+    }
+
+    @Test
+    void browseAppsShouldReturnEmptyArrayWhenNoAppsMatch() throws Exception {
+        when(appService.browseApps("unknown", null)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/apps").param("name", "unknown"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
     }
 }

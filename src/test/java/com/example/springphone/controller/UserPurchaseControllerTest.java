@@ -1,5 +1,6 @@
 package com.example.springphone.controller;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,6 +34,20 @@ class UserPurchaseControllerTest {
     private PurchaseService purchaseService;
 
     @Test
+    void browseAvailableAppsShouldReturnAvailableAppsForUserWhenNoFiltersProvided() throws Exception {
+        when(appService.browseAvailableAppsForUser(1L, null, null)).thenReturn(List.of(
+            new AppResponse(20L, "RoadScout", "Travel", new BigDecimal("3.19"), "Travel helper app.")
+        ));
+
+        mockMvc.perform(get("/api/users/1/apps/available"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(20))
+            .andExpect(jsonPath("$[0].name").value("RoadScout"));
+
+        verify(appService).browseAvailableAppsForUser(1L, null, null);
+    }
+
+    @Test
     void browseAvailableAppsShouldReturnAvailableAppsForUser() throws Exception {
         when(appService.browseAvailableAppsForUser(1L, null, "Games")).thenReturn(List.of(
             new AppResponse(18L, "StreetBall", "Games", new BigDecimal("4.49"), "Arcade basketball game.")
@@ -43,6 +58,18 @@ class UserPurchaseControllerTest {
             .andExpect(jsonPath("$[0].id").value(18))
             .andExpect(jsonPath("$[0].name").value("StreetBall"))
             .andExpect(jsonPath("$[0].category").value("Games"));
+
+        verify(appService).browseAvailableAppsForUser(1L, null, "Games");
+    }
+
+    @Test
+    void browseAvailableAppsShouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
+        when(appService.browseAvailableAppsForUser(99L, null, null))
+            .thenThrow(new IllegalArgumentException("User not found: 99"));
+
+        mockMvc.perform(get("/api/users/99/apps/available"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("User not found: 99"));
     }
 
     @Test
@@ -63,6 +90,17 @@ class UserPurchaseControllerTest {
             .andExpect(jsonPath("$[0].purchaseId").value(101))
             .andExpect(jsonPath("$[0].appId").value(11))
             .andExpect(jsonPath("$[0].appName").value("TravelMap"));
+
+        verify(purchaseService).getPurchasedApps(1L);
+    }
+
+    @Test
+    void getPurchasedAppsShouldReturnEmptyArrayWhenNoPurchasesExist() throws Exception {
+        when(purchaseService.getPurchasedApps(8L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/users/8/purchases"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(0));
     }
 
     @Test
@@ -88,6 +126,8 @@ class UserPurchaseControllerTest {
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.purchaseId").value(102))
             .andExpect(jsonPath("$.appName").value("TravelMap"));
+
+        verify(purchaseService).purchaseApp(1L, 11L);
     }
 
     @Test
@@ -104,6 +144,51 @@ class UserPurchaseControllerTest {
                     """))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.error").value("User 1 already purchased app 11"));
+    }
+
+    @Test
+    void purchaseAppShouldReturnNotFoundWhenAppDoesNotExist() throws Exception {
+        when(purchaseService.purchaseApp(1L, 999L))
+            .thenThrow(new IllegalArgumentException("App not found: 999"));
+
+        mockMvc.perform(post("/api/users/1/purchases")
+                .contentType(APPLICATION_JSON)
+                .content("""
+                    {
+                      "appId": 999
+                    }
+                    """))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("App not found: 999"));
+    }
+
+    @Test
+    void purchaseAppShouldPassNullAppIdThroughToServiceForInvalidBodySamples() throws Exception {
+        when(purchaseService.purchaseApp(1L, null))
+            .thenThrow(new IllegalArgumentException("App id must not be null"));
+
+        mockMvc.perform(post("/api/users/1/purchases")
+                .contentType(APPLICATION_JSON)
+                .content("""
+                    {
+                    }
+                    """))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("App id must not be null"));
+
+        verify(purchaseService).purchaseApp(1L, null);
+    }
+
+    @Test
+    void purchaseAppShouldReturnBadRequestForMalformedJson() throws Exception {
+        mockMvc.perform(post("/api/users/1/purchases")
+                .contentType(APPLICATION_JSON)
+                .content("""
+                    {
+                      "appId":
+                    }
+                    """))
+            .andExpect(status().isBadRequest());
     }
 
     @Test

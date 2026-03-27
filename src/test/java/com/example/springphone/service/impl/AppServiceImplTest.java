@@ -65,6 +65,44 @@ class AppServiceImplTest {
     }
 
     @Test
+    void browseAppsShouldTreatBlankFiltersAsMissingFilters() {
+        AppEntity alpha = createApp(1L, "Alpha Weather", "Utilities", "0.00");
+        when(appRepository.findAll()).thenReturn(List.of(alpha));
+
+        List<AppResponse> result = appService.browseApps("   ", " ");
+
+        assertEquals(1, result.size());
+        assertEquals("Alpha Weather", result.getFirst().name());
+        verify(appRepository).findAll();
+        verify(appRepository, never()).findByNameContainingIgnoreCaseOrderByNameAsc(anyString());
+        verify(appRepository, never()).findByCategoryIgnoreCaseOrderByNameAsc(anyString());
+    }
+
+    @Test
+    void browseAppsShouldFilterByCategoryOnly() {
+        AppEntity app = createApp(12L, "Focus Timer", "Productivity", "0.99");
+        when(appRepository.findByCategoryIgnoreCaseOrderByNameAsc("Productivity")).thenReturn(List.of(app));
+
+        List<AppResponse> result = appService.browseApps(null, "Productivity");
+
+        assertEquals(1, result.size());
+        assertEquals("Focus Timer", result.getFirst().name());
+        verify(appRepository).findByCategoryIgnoreCaseOrderByNameAsc("Productivity");
+    }
+
+    @Test
+    void browseAppsShouldFilterByNameOnly() {
+        AppEntity app = createApp(2L, "FitTrack Pro", "Health", "3.99");
+        when(appRepository.findByNameContainingIgnoreCaseOrderByNameAsc("fit")).thenReturn(List.of(app));
+
+        List<AppResponse> result = appService.browseApps("fit", null);
+
+        assertEquals(1, result.size());
+        assertEquals("FitTrack Pro", result.getFirst().name());
+        verify(appRepository).findByNameContainingIgnoreCaseOrderByNameAsc("fit");
+    }
+
+    @Test
     void browseAvailableAppsForUserShouldQueryAvailableAppsByName() {
         UserEntity user = new UserEntity();
         user.setId(1L);
@@ -82,6 +120,39 @@ class AppServiceImplTest {
     }
 
     @Test
+    void browseAvailableAppsForUserShouldQueryAvailableAppsByNameAndCategory() {
+        UserEntity user = new UserEntity();
+        user.setId(1L);
+
+        AppEntity app = createApp(17L, "GoalGrid", "Productivity", "1.89");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(appRepository.findAvailableAppsForUserByNameAndCategory(1L, "goal", "Productivity"))
+            .thenReturn(List.of(app));
+
+        List<AppResponse> result = appService.browseAvailableAppsForUser(1L, " goal ", "Productivity");
+
+        assertEquals(1, result.size());
+        assertEquals("GoalGrid", result.getFirst().name());
+        verify(appRepository).findAvailableAppsForUserByNameAndCategory(1L, "goal", "Productivity");
+    }
+
+    @Test
+    void browseAvailableAppsForUserShouldReturnAllAvailableAppsWhenFiltersAreBlank() {
+        UserEntity user = new UserEntity();
+        user.setId(1L);
+
+        AppEntity app = createApp(20L, "RoadScout", "Travel", "3.19");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(appRepository.findAvailableAppsForUser(1L)).thenReturn(List.of(app));
+
+        List<AppResponse> result = appService.browseAvailableAppsForUser(1L, "   ", "   ");
+
+        assertEquals(1, result.size());
+        assertEquals("RoadScout", result.getFirst().name());
+        verify(appRepository).findAvailableAppsForUser(1L);
+    }
+
+    @Test
     void browseAvailableAppsForUserShouldThrowWhenUserDoesNotExist() {
         when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -91,6 +162,8 @@ class AppServiceImplTest {
         assertEquals("User not found: 99", exception.getMessage());
         verify(appRepository, never()).findAvailableAppsForUser(99L);
         verify(appRepository, never()).findAvailableAppsForUserByName(anyLong(), anyString());
+        verify(appRepository, never()).findAvailableAppsForUserByCategory(anyLong(), anyString());
+        verify(appRepository, never()).findAvailableAppsForUserByNameAndCategory(anyLong(), anyString(), anyString());
     }
 
     private AppEntity createApp(Long id, String name, String category, String price) {

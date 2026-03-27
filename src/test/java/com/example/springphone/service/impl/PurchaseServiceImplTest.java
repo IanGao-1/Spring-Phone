@@ -93,6 +93,33 @@ class PurchaseServiceImplTest {
     }
 
     @Test
+    void purchaseAppShouldThrowWhenUserDoesNotExist() {
+        when(userRepository.findById(77L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception =
+            assertThrows(IllegalArgumentException.class, () -> purchaseService.purchaseApp(77L, 11L));
+
+        assertEquals("User not found: 77", exception.getMessage());
+        verify(appRepository, never()).findById(11L);
+        verify(purchaseRepository, never()).save(any(PurchaseEntity.class));
+    }
+
+    @Test
+    void purchaseAppShouldThrowWhenAppDoesNotExist() {
+        UserEntity user = createUser(1L, "alice");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(appRepository.findById(999L)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception =
+            assertThrows(IllegalArgumentException.class, () -> purchaseService.purchaseApp(1L, 999L));
+
+        assertEquals("App not found: 999", exception.getMessage());
+        verify(purchaseRepository, never()).existsByUser_IdAndApp_Id(1L, 999L);
+        verify(purchaseRepository, never()).save(any(PurchaseEntity.class));
+    }
+
+    @Test
     void getPurchasedAppsShouldReturnPurchasesOrderedByTime() {
         UserEntity user = createUser(1L, "alice");
         PurchaseEntity newer = createPurchase(
@@ -110,6 +137,18 @@ class PurchaseServiceImplTest {
         assertEquals(2, result.size());
         assertEquals("TravelMap", result.get(0).appName());
         assertEquals("NoteNest", result.get(1).appName());
+    }
+
+    @Test
+    void getPurchasedAppsShouldReturnEmptyListWhenUserHasNoPurchases() {
+        UserEntity user = createUser(8L, "helen");
+
+        when(userRepository.findById(8L)).thenReturn(Optional.of(user));
+        when(purchaseRepository.findByUser_IdOrderByPurchaseTimeDesc(8L)).thenReturn(List.of());
+
+        List<PurchaseResponse> result = purchaseService.getPurchasedApps(8L);
+
+        assertEquals(0, result.size());
     }
 
     @Test
